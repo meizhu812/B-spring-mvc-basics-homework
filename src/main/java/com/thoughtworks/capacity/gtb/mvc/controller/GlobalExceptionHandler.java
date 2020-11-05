@@ -18,17 +18,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ControllerAdvice
+@ResponseBody
 public class GlobalExceptionHandler {
     @ExceptionHandler(UsernameExistsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public Error handleUserExist(UsernameExistsException exception) {
         return new Error(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public Error handleInvalidField(Exception exception) {
         Stream<String> errorMessages;
         if (exception instanceof MethodArgumentNotValidException) {
@@ -45,7 +44,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({UserNotFoundException.class, PasswordMismatchException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ResponseBody
     public Error handleInvalidLogin(Exception exception) {
         return new Error(HttpStatus.NOT_FOUND.value(), "用户名或密码错误");
     }
