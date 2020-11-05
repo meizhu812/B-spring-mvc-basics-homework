@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
 @RestController
+@Validated
 public class UserController {
     private final UserService userService;
 
@@ -25,7 +26,6 @@ public class UserController {
     }
 
     @GetMapping("/login")
-    @Validated
     @ResponseStatus(HttpStatus.OK)
     public User login(@RequestParam @Pattern(message = "用户名不合法", regexp = "^[\\w]{3,10}$") String username,
                       @RequestParam @Pattern(message = "密码不合法", regexp = "^.{5,12}$") String password) {
