@@ -6,11 +6,11 @@ import com.thoughtworks.capacity.gtb.mvc.exception.UserNotFoundException;
 import com.thoughtworks.capacity.gtb.mvc.exception.UsernameExistsException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -21,14 +21,13 @@ import java.util.stream.Stream;
 @ResponseBody
 public class GlobalExceptionHandler {
     @ExceptionHandler(UsernameExistsException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Error handleUserExist(UsernameExistsException exception) {
-        return new Error(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
+    public ResponseEntity<Error> handleUserExist(UsernameExistsException exception) {
+        return ResponseEntity.badRequest()
+                .body(new Error(HttpStatus.BAD_REQUEST.value(), exception.getMessage()));
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Error handleInvalidField(Exception exception) {
+    public ResponseEntity<Error> handleInvalidField(Exception exception) {
         Stream<String> errorMessages;
         if (exception instanceof MethodArgumentNotValidException) {
             errorMessages = ((MethodArgumentNotValidException) exception).getBindingResult().getFieldErrors().stream()
@@ -39,12 +38,12 @@ public class GlobalExceptionHandler {
         } else {
             errorMessages = Stream.empty(); // defensive
         }
-        return new Error(HttpStatus.BAD_REQUEST.value(), errorMessages.collect(Collectors.joining("|")));
+        return ResponseEntity.badRequest()
+                .body(new Error(HttpStatus.BAD_REQUEST.value(), errorMessages.collect(Collectors.joining("|"))));
     }
 
     @ExceptionHandler({UserNotFoundException.class, PasswordMismatchException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Error handleInvalidLogin(Exception exception) {
-        return new Error(HttpStatus.NOT_FOUND.value(), "用户名或密码错误");
+    public ResponseEntity<Error> handleInvalidLogin() {
+        return new ResponseEntity<>(new Error(HttpStatus.UNAUTHORIZED.value(), "用户名或密码错误"), HttpStatus.UNAUTHORIZED);
     }
 }
