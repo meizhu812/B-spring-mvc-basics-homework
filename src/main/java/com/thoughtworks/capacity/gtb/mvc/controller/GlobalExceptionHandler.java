@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -25,29 +26,27 @@ public class GlobalExceptionHandler {
         return new Error(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public Error handleInvalidRegisterField(MethodArgumentNotValidException exception) {
-        String errorMessages = exception.getBindingResult().getFieldErrors().stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.joining("|"));
-        return new Error(HttpStatus.BAD_REQUEST.value(), errorMessages);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
-    public Error handleInvalidLoginField(ConstraintViolationException exception) {
-        String errorMessages = exception.getConstraintViolations().stream().map(ConstraintViolation::getMessage)
-                .collect(Collectors.joining("|"));
-        return new Error(HttpStatus.BAD_REQUEST.value(), errorMessages);
+    public Error handleInvalidField(Exception exception) {
+        Stream<String> errorMessages;
+        if (exception instanceof MethodArgumentNotValidException) {
+            errorMessages = ((MethodArgumentNotValidException) exception).getBindingResult().getFieldErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage);
+        } else if (exception instanceof ConstraintViolationException) {
+            errorMessages = ((ConstraintViolationException) exception).getConstraintViolations().stream()
+                    .map(ConstraintViolation::getMessage);
+        } else {
+            errorMessages = Stream.empty(); // defensive
+        }
+        return new Error(HttpStatus.BAD_REQUEST.value(), errorMessages.collect(Collectors.joining("|")));
     }
 
     @ExceptionHandler({UserNotFoundException.class, PasswordMismatchException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
     public Error handleInvalidLogin(Exception exception) {
-        return new Error(HttpStatus.BAD_REQUEST.value(), "用户名或密码错误");
+        return new Error(HttpStatus.NOT_FOUND.value(), "用户名或密码错误");
     }
 }
