@@ -1,5 +1,6 @@
 package com.thoughtworks.capacity.gtb.mvc.service;
 
+import com.thoughtworks.capacity.gtb.mvc.controller.dto.RegisterRequest;
 import com.thoughtworks.capacity.gtb.mvc.exception.PasswordMismatchException;
 import com.thoughtworks.capacity.gtb.mvc.exception.UserNotFoundException;
 import com.thoughtworks.capacity.gtb.mvc.exception.UsernameExistsException;
@@ -13,11 +14,15 @@ import java.util.Map;
 public class UserService {
     private final Map<String, User> users = new HashMap<>();
 
-    public void register(User user) {
-        if (users.containsKey(user.getUsername())) {
+    public void register(RegisterRequest registerRequest) {
+        if (users.containsKey(registerRequest.getUsername())) {
             throw new UsernameExistsException("用户已存在");
         }
-        users.put(user.getUsername(), user);
+        User newUser = new User(users.size() + 1,
+                registerRequest.getUsername(),
+                registerRequest.getPassword(),
+                registerRequest.getEmail());
+        users.put(newUser.getUsername(), newUser);
     }
 
     public User login(String username, String password) {

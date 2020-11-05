@@ -1,5 +1,6 @@
 package com.thoughtworks.capacity.gtb.mvc.controller;
 
+import com.thoughtworks.capacity.gtb.mvc.controller.dto.RegisterRequest;
 import com.thoughtworks.capacity.gtb.mvc.model.User;
 import com.thoughtworks.capacity.gtb.mvc.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -19,8 +20,8 @@ public class UserController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void register(@RequestBody @Valid User user) {
-        userService.register(user);
+    public void register(@RequestBody @Valid RegisterRequest registerRequest) {
+        userService.register(registerRequest);
     }
 
     @GetMapping("/login")

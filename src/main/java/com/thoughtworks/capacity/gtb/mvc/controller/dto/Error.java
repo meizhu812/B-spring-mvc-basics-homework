@@ -1,7 +1,5 @@
 package com.thoughtworks.capacity.gtb.mvc.controller.dto;
 
-import org.springframework.http.HttpStatus;
-
 public class Error {
     private final int code;
     private final String message;
